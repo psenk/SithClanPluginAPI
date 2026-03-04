@@ -12,6 +12,13 @@
 	},
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "sithclanplugindatabase",
+			"database_name": "sithclanplugindatabase",
+			"database_id": "a91457eb-3bb2-4de6-948e-fddacad305a6"
+		}
 	]
 	/**
 	 * Smart Placement
