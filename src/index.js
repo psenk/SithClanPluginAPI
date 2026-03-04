@@ -9,7 +9,16 @@
  */
 
 export default {
-	async fetch(request, env, ctx) {
-		return new Response('Hello World!');
+	async fetch(request, env) {
+		const { pathname } = new URL(request.url);
+
+		if (pathname === 'api/beverages') {
+			const { results } = await env.sithclanplugindatabase
+				.prepare('SELECT * FROM Customers WHERE CompanyName = ?')
+				.bind('Bs Beverages')
+				.run();
+			return Response.json(results);
+		}
+		return new Response('Call /api/beverages to see everyone who works at Bs Beverages');
 	},
 };
