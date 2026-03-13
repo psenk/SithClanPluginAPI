@@ -1,22 +1,37 @@
 -- Main Database Tables
 
--- Event Schedule table
-DROP TABLE IF EXISTS EventSchedule;
-CREATE TABLE IF NOT EXISTS EventSchedule 
+-- Event Schedule tables
+DROP TABLE IF EXISTS EventMiscInfo;
+DROP TABLE IF EXISTS Event;
+DROP TABLE IF EXISTS DaySchedule;
+
+CREATE TABLE IF NOT EXISTS DaySchedule 
 (
-    EventId INT PRIMARY KEY, 
-    EventSchedule TEXT NOT NULL
+    DayId INTEGER PRIMARY KEY AUTOINCREMENT, 
+    Date TEXT NOT NULL
 );
 
--- Testing Tables
-
--- Test Event Schedule Table
-DROP TABLE IF EXISTS TestEventSchedule;
-CREATE TABLE IF NOT EXISTS TestEventSchedule 
+CREATE TABLE IF NOT EXISTS Event
 (
-    EventId INT PRIMARY KEY, 
-    EventSchedule TEXT NOT NULL
+    EventId INTEGER PRIMARY KEY AUTOINCREMENT,
+    DayId INTEGER NOT NULL,
+    EventTitle TEXT NOT NULL,
+    EventTime TEXT NOT NULL,
+    EventHost TEXT,
+    EventLocation TEXT,
+    EventRepeated INTEGER DEFAULT 0,
+    FOREIGN KEY (DayId) REFERENCES DaySchedule(DayId)
 );
+
+CREATE TABLE IF NOT EXISTS EventMiscInfo
+(
+    MiscInfoId INTEGER PRIMARY KEY AUTOINCREMENT,
+    EventId INTEGER NOT NULL,
+    Info TEXT NOT NULL,
+    FOREIGN KEY (EventId) REFERENCES Event(EventId)
+);
+
+
 INSERT INTO TestEventSchedule (EventId, EventSchedule) 
 VALUES (1, '[{"eventDate": "1/1/2026", "events": [{"eventTitle": "Mahogany Homes","eventTime": "12:00 PM","eventHost": "Sasa254","eventLocation": ":earth_americas: W491",
 "eventRepeated": true}]},{"eventDate": "1/2/2026","events":[{"eventTitle": "Star Mining","eventTime": "1:00 PM","eventHost": "HouseWaifuu","eventLocation": ":earth_americas: W491",
