@@ -13,7 +13,7 @@ export default {
 	 * Handles incoming HTTP requests.
 	 *
 	 * @param   {Request} request incoming HTTP request
-	 * @param   {Env}     env     wrangler worker bindings and environment variables
+	 * @param   {Env}     env     wrangler environment variables
 	 * @returns {Response}        HTTP response
 	 */
 	async fetch(request, env) {
@@ -70,8 +70,11 @@ export default {
 
 			// POST event schedule
 			case '/api/eventschedule/post':
-				// TODO: API key check/misc security
-				// TODO: input sanitization
+				// check for authorization
+				if (!validateAuth(request, env)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+
 				// JSON data from runelite
 				const body = await request.json();
 
@@ -112,3 +115,19 @@ export default {
 		}
 	},
 };
+
+/**
+ * Validates incoming requests for authorization
+ *
+ * @param   {HTTPRequest} request incoming request requiring validation
+ * @param   {Env}         env     wrangler environment variables
+ * @returns {boolean}             true or false if request is good or bad
+ */
+function validateAuth(request, env) {
+	// check for authorization
+	const authHeader = request.headers.get('Authorization');
+	if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+
+	// returns if auth token is correct
+	return authHeader.substring(7) === env.ADMIN_API_KEY;
+}
