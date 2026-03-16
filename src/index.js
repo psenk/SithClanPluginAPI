@@ -110,6 +110,13 @@ export default {
 
 				return new Response('Schedule posted successfully', { status: 200 });
 
+			// validate API key
+			case '/api/validate':
+				if (!validateAuth(request, env)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+				return new Response('OK', { status: 200 });
+
 			default:
 				return new Response('Not found', { status: 404 });
 		}
