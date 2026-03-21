@@ -24,7 +24,7 @@ export default {
 			// GET event schedule
 			case '/api/eventschedule':
 				// SQL query to get data from database
-				const { results } = await env.sithclanplugindatabase
+				const { results: scheduleResults } = await env.sithclanplugindatabase
 					.prepare(
 						'SELECT d.DayId, d.Date, e.EventId, e.EventTitle, e.EventTime, e.EventHost, e.EventLocation, e.EventRepeated, emi.Info ' +
 							'FROM DaySchedule d ' +
@@ -38,7 +38,7 @@ export default {
 				const dayMap = new Map();
 				const eventMap = new Map();
 
-				for (const row of results) {
+				for (const row of scheduleResults) {
 					// add day if not seen
 					if (!dayMap.has(row.DayId)) {
 						const day = { date: row.Date, events: [] };
@@ -75,15 +75,16 @@ export default {
 					return new Response('Unauthorized', { status: 401 });
 				}
 
-				// JSON data from runelite
-				const body = await request.json();
+				// data from runelite
+				const scheduleBody = await request.json();
 
 				// clear old data
 				await env.sithclanplugindatabase.prepare('DELETE FROM EventMiscInfo;').run();
 				await env.sithclanplugindatabase.prepare('DELETE FROM Event;').run();
 				await env.sithclanplugindatabase.prepare('DELETE FROM DaySchedule;').run();
 
-				for (const day of body) {
+				// iterate through schedule
+				for (const day of scheduleBody) {
 					// insert day and get id
 					const dayResult = await env.sithclanplugindatabase.prepare('INSERT INTO DaySchedule (Date) VALUES (?);').bind(day.date).run();
 					const dayId = dayResult.meta.last_row_id;
@@ -107,8 +108,68 @@ export default {
 						}
 					}
 				}
-
 				return new Response('Schedule posted successfully', { status: 200 });
+
+			// GET member roster
+			case '/api/memberroster':
+				// SQL quert to get data from database
+				const { results: rosterResults } = await env.sithclanplugindatabase
+					.prepare(
+						'SELECT MemberName, MemberRank, MemberCredits, MemberDiscordId, MemberDateJoined, MemberAltName, MemberDatePromoted ' +
+							'FROM MemberRoster;',
+					)
+					.run();
+
+				// building JSON response
+				const roster = [];
+
+				for (const user of rosterResults) {
+					const member = {
+						memberName: user.MemberName,
+						memberRank: user.MemberRank,
+						memberCredits: user.MemberCredits,
+						memberDiscordId: user.MemberDiscordId,
+						memberDateJoined: user.MemberDateJoined,
+						memberAltName: user.MemberAltName,
+						memberDatePromoted: user.MemberDatePromoted,
+					};
+					roster.push(member);
+				}
+
+				return Response.json(roster);
+
+			// POST member roster
+			case '/api/memberroster/post':
+				// check for authorization
+				if (!validateAuth(request, env)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+
+				// data from runelite
+				const rosterBody = await request.json();
+
+				// clear old data
+				await env.sithclanplugindatabase.prepare('DELETE FROM MemberRoster;').run();
+
+				// iterate through roster
+				for (const member of rosterBody) {
+					// insert member
+					await env.sithclanplugindatabase
+						.prepare(
+							'INSERT INTO MemberRoster (MemberName, MemberRank, MemberCredits, MemberDiscordId, MemberDateJoined, MemberAltName, MemberDatePromoted) VALUES (?, ?, ?, ?, ?, ?, ?);',
+						)
+						.bind(
+							member.memberName,
+							member.memberRank,
+							member.memberCredits,
+							member.memberDiscordId,
+							member.memberDateJoined,
+							member.memberAltName,
+							member.memberDatePromoted,
+						)
+						.run();
+				}
+				return new Response('Member roster posted successfully', { status: 200 });
 
 			// validate API key
 			case '/api/validate':
