@@ -49,6 +49,5 @@ CREATE TABLE IF NOT EXISTS MemberRoster
     MemberDiscordId TEXT NOT NULL, -- DISCORD IDS ARE LARGE
     MemberDateJoined TEXT NOT NULL,
     MemberAltName TEXT,
-    MemberDatePromoted TEXT,
-    FOREIGN KEY (DateId) REFERENCES RosterDate(DateId)
+    MemberDatePromoted TEXT
 );

@@ -112,13 +112,16 @@ export default {
 
 			// GET member roster
 			case '/api/memberroster':
-				// SQL quert to get data from database
+				// SQL query to get roster from database
 				const { results: rosterResults } = await env.sithclanplugindatabase
 					.prepare(
 						'SELECT MemberName, MemberRank, MemberCredits, MemberDiscordId, MemberDateJoined, MemberAltName, MemberDatePromoted ' +
 							'FROM MemberRoster;',
 					)
 					.run();
+
+				// query to get roster date from database
+				const { results: rosterDate } = await env.sithclanplugindatabase.prepare('SELECT Date FROM RosterDate;').run();
 
 				// building JSON response
 				const roster = [];
@@ -136,7 +139,9 @@ export default {
 					roster.push(member);
 				}
 
-				return Response.json(roster);
+				const date = rosterDate[0].Date;
+
+				return Response.json({ date, roster });
 
 			// POST member roster
 			case '/api/memberroster/post':
@@ -150,6 +155,7 @@ export default {
 
 				// clear old data
 				await env.sithclanplugindatabase.prepare('DELETE FROM MemberRoster;').run();
+				await env.sithclanplugindatabase.prepare('DELETE FROM RosterDate;').run();
 
 				// iterate through roster
 				for (const member of rosterBody) {
@@ -169,6 +175,10 @@ export default {
 						)
 						.run();
 				}
+
+				// post roster date
+				await env.sithclanplugindatabase.prepare('INSERT INTO RosterDate (Date) VALUES (?);').bind(new Date().toISOString()).run();
+
 				return new Response('Member roster posted successfully', { status: 200 });
 
 			// validate API key
