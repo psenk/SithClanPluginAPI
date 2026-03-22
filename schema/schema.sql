@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS EventMiscInfo;
 DROP TABLE IF EXISTS Event;
 DROP TABLE IF EXISTS DaySchedule;
+DROP TABLE IF EXISTS RosterDate;
 DROP TABLE IF EXISTS MemberRoster;
 
 CREATE TABLE IF NOT EXISTS DaySchedule 
@@ -32,14 +33,22 @@ CREATE TABLE IF NOT EXISTS EventMiscInfo
     FOREIGN KEY (EventId) REFERENCES Event(EventId)
 );
 
+CREATE TABLE IF NOT EXISTS RosterDate
+(
+    DateId INTEGER PRIMARY KEY AUTOINCREMENT,
+    Date TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS MemberRoster
 (
     MemberId INTEGER PRIMARY KEY AUTOINCREMENT,
+    DateId INTEGER NOT NULL,
     MemberName TEXT NOT NULL,
     MemberRank INTEGER NOT NULL,
     MemberCredits INTEGER NOT NULL,
     MemberDiscordId TEXT NOT NULL, -- DISCORD IDS ARE LARGE
     MemberDateJoined TEXT NOT NULL,
     MemberAltName TEXT,
-    MemberDatePromoted TEXT
+    MemberDatePromoted TEXT,
+    FOREIGN KEY (DateId) REFERENCES RosterDate(DateId)
 );
