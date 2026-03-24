@@ -159,6 +159,7 @@ export default {
 
 				// iterate through roster
 				for (const member of rosterBody) {
+					console.log(JSON.stringify(member));
 					// insert member
 					await env.sithclanplugindatabase
 						.prepare(
@@ -170,8 +171,8 @@ export default {
 							member.memberCredits,
 							member.memberDiscordId,
 							member.memberDateJoined,
-							member.memberAltName,
-							member.memberDatePromoted,
+							member.memberAltName ?? null,
+							member.memberDatePromoted ?? null,
 						)
 						.run();
 				}
