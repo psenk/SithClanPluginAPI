@@ -1,12 +1,4 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+// TODO: multiple announcements in the future?
 
 export default {
 	/**
@@ -18,55 +10,13 @@ export default {
 	 */
 	async fetch(request, env) {
 		const { pathname } = new URL(request.url);
-		console.log('pathname: ', pathname);
 
 		switch (pathname) {
 			// GET event schedule
 			case '/api/eventschedule':
-				// SQL query to get data from database
-				const { results: scheduleResults } = await env.sithclanplugindatabase
-					.prepare(
-						'SELECT d.DayId, d.Date, e.EventId, e.EventTitle, e.EventTime, e.EventHost, e.EventLocation, e.EventRepeated, emi.Info ' +
-							'FROM DaySchedule d ' +
-							'INNER JOIN Event e ON e.DayId = d.DayId ' +
-							'LEFT JOIN EventMiscInfo emi ON emi.EventId = e.EventId;',
-					)
-					.run();
+				const getSchedule = await fetchSchedule(env);
 
-				// building nested JSON structure
-				const schedule = [];
-				const dayMap = new Map();
-				const eventMap = new Map();
-
-				for (const row of scheduleResults) {
-					// add day if not seen
-					if (!dayMap.has(row.DayId)) {
-						const day = { date: row.Date, events: [] };
-						dayMap.set(row.DayId, day);
-						schedule.push(day);
-					}
-
-					// add event if not seen
-					if (!eventMap.has(row.EventId)) {
-						const event = {
-							eventTitle: row.EventTitle,
-							eventTime: row.EventTime,
-							eventHost: row.EventHost,
-							eventLocation: row.EventLocation,
-							eventRepeated: row.EventRepeated === 1,
-							eventMiscInfo: [],
-						};
-						eventMap.set(row.EventId, event);
-						dayMap.get(row.DayId).events.push(event);
-					}
-
-					// add misc info if present
-					if (row.Info !== null) {
-						eventMap.get(row.EventId).eventMiscInfo.push(row.Info);
-					}
-				}
-
-				return Response.json(schedule);
+				return Response.json(getSchedule);
 
 			// POST event schedule
 			case '/api/eventschedule/post':
@@ -159,7 +109,6 @@ export default {
 
 				// iterate through roster
 				for (const member of rosterBody) {
-					console.log(JSON.stringify(member));
 					// insert member
 					await env.sithclanplugindatabase
 						.prepare(
@@ -182,6 +131,43 @@ export default {
 
 				return new Response('Member roster posted successfully', { status: 200 });
 
+			// GET announcements
+			case '/api/announcements':
+				const getAnnouncements = await fetchAnnouncements(env);
+
+				return Response.json(getAnnouncements);
+
+			// POST announcements
+			case '/api/announcements/post':
+				// check for authorization
+				if (!validateAuth(request, env)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+
+				// data from runelite
+				const announcementBody = await request.json();
+
+				// clear old data
+				await env.sithclanplugindatabase.prepare('DELETE FROM Announcements;').run();
+
+				// iterate through announcements
+				for (const announcement of announcementBody) {
+					// insert announcement
+					await env.sithclanplugindatabase
+						.prepare('INSERT INTO Announcements (AnnouncementDate, AnnouncementText) VALUES (?, ?);')
+						.bind(new Date().toISOString(), announcement.announcementText)
+						.run();
+				}
+
+				return new Response('Announcements posted successfully', { status: 200 });
+
+			// GET startup info
+			case '/api/startup':
+				// getting all required startup info
+				const [startupSchedule, startupAnnouncements] = await Promise.all([fetchSchedule(env), fetchAnnouncements(env)]);
+
+				return Response.json({ startupSchedule, startupAnnouncements });
+
 			// validate API key
 			case '/api/validate':
 				if (!validateAuth(request, env)) {
@@ -194,6 +180,81 @@ export default {
 		}
 	},
 };
+
+/**
+ * Fetches schedule from database
+ *
+ * @param   {Env}      env     wrangler environment variables
+ * @returns {String[]}         schedule as nested JSON array
+ */
+async function fetchSchedule(env) {
+	// SQL query to get data from database
+	const { results: scheduleResults } = await env.sithclanplugindatabase
+		.prepare(
+			'SELECT d.DayId, d.Date, e.EventId, e.EventTitle, e.EventTime, e.EventHost, e.EventLocation, e.EventRepeated, emi.Info ' +
+				'FROM DaySchedule d ' +
+				'INNER JOIN Event e ON e.DayId = d.DayId ' +
+				'LEFT JOIN EventMiscInfo emi ON emi.EventId = e.EventId;',
+		)
+		.run();
+
+	// building nested JSON structure
+	const schedule = [];
+	const dayMap = new Map();
+	const eventMap = new Map();
+
+	for (const row of scheduleResults) {
+		// add day if not seen
+		if (!dayMap.has(row.DayId)) {
+			const day = { date: row.Date, events: [] };
+			dayMap.set(row.DayId, day);
+			schedule.push(day);
+		}
+
+		// add event if not seen
+		if (!eventMap.has(row.EventId)) {
+			const event = {
+				eventTitle: row.EventTitle,
+				eventTime: row.EventTime,
+				eventHost: row.EventHost,
+				eventLocation: row.EventLocation,
+				eventRepeated: row.EventRepeated === 1,
+				eventMiscInfo: [],
+			};
+			eventMap.set(row.EventId, event);
+			dayMap.get(row.DayId).events.push(event);
+		}
+
+		// add misc info if present
+		if (row.Info !== null) {
+			eventMap.get(row.EventId).eventMiscInfo.push(row.Info);
+		}
+	}
+	return schedule;
+}
+
+/**
+ * Fetches clan announcements from database
+ *
+ * @param   {Env}      env     wrangler environment variables
+ * @returns {String[]}         announcements as JSON array
+ */
+async function fetchAnnouncements(env) {
+	// SQL query to get announcements from database
+	const { results: announcementsResult } = await env.sithclanplugindatabase
+		.prepare('SELECT AnnouncementText, AnnouncementDate FROM Announcements;')
+		.run();
+
+	// building JSON response
+	const announcements = [];
+
+	// iterate through announcements
+	for (const row of announcementsResult) {
+		const announcement = { announcementDate: row.AnnouncementDate, announcementText: row.AnnouncementText };
+		announcements.push(announcement);
+	}
+	return announcements;
+}
 
 /**
  * Validates incoming requests for authorization

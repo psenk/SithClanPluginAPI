@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS Event;
 DROP TABLE IF EXISTS DaySchedule;
 DROP TABLE IF EXISTS RosterDate;
 DROP TABLE IF EXISTS MemberRoster;
+DROP TABLE IF EXISTS Announcements;
 
 CREATE TABLE IF NOT EXISTS DaySchedule 
 (
@@ -49,4 +50,11 @@ CREATE TABLE IF NOT EXISTS MemberRoster
     MemberDateJoined TEXT NOT NULL,
     MemberAltName TEXT,
     MemberDatePromoted TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Announcements
+(
+    AnnouncementId INTEGER PRIMARY KEY AUTOINCREMENT,
+    AnnouncementDate TEXT NOT NULL,
+    AnnouncementText TEXT
 );
