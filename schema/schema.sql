@@ -56,5 +56,6 @@ CREATE TABLE IF NOT EXISTS Announcements
 (
     AnnouncementId INTEGER PRIMARY KEY AUTOINCREMENT,
     AnnouncementDate TEXT NOT NULL,
-    AnnouncementText TEXT
+    AnnouncementText TEXT,
+    LastEdited TEXT
 );
