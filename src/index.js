@@ -60,7 +60,7 @@ router.get('/api/memberroster', async (request, env) => {
 	// SQL query to get roster from database
 	const { results: rosterResults } = await env.sithclanplugindatabase
 		.prepare(
-			'SELECT MemberName, MemberRank, MemberCredits, MemberDiscordId, MemberDateJoined, MemberAltName, MemberDatePromoted ' +
+			'SELECT MemberName, MemberRank, MemberCredits, MemberDateJoined, MemberAltName, MemberDatePromoted ' +
 				'FROM MemberRoster;',
 		)
 		.run();
@@ -76,7 +76,6 @@ router.get('/api/memberroster', async (request, env) => {
 			memberName: user.MemberName,
 			memberRank: user.MemberRank,
 			memberCredits: user.MemberCredits,
-			memberDiscordId: user.MemberDiscordId,
 			memberDateJoined: user.MemberDateJoined,
 			memberAltName: user.MemberAltName,
 			memberDatePromoted: user.MemberDatePromoted,
@@ -108,13 +107,12 @@ router.post('/api/memberroster', async (request, env) => {
 		// insert member
 		await env.sithclanplugindatabase
 			.prepare(
-				'INSERT INTO MemberRoster (MemberName, MemberRank, MemberCredits, MemberDiscordId, MemberDateJoined, MemberAltName, MemberDatePromoted) VALUES (?, ?, ?, ?, ?, ?, ?);',
+				'INSERT INTO MemberRoster (MemberName, MemberRank, MemberCredits, MemberDateJoined, MemberAltName, MemberDatePromoted) VALUES (?, ?, ?, ?, ?, ?);',
 			)
 			.bind(
 				member.memberName,
 				member.memberRank,
 				member.memberCredits,
-				member.memberDiscordId,
 				member.memberDateJoined,
 				member.memberAltName ?? null,
 				member.memberDatePromoted ?? null,

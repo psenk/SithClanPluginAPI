@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS MemberRoster
     MemberName TEXT NOT NULL,
     MemberRank INTEGER NOT NULL,
     MemberCredits INTEGER NOT NULL,
-    MemberDiscordId TEXT NOT NULL, -- DISCORD IDS ARE LARGE
     MemberDateJoined TEXT NOT NULL,
     MemberAltName TEXT,
     MemberDatePromoted TEXT
