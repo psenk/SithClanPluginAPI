@@ -20,8 +20,17 @@ router.post('/api/eventschedule', async (request, env) => {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	// data from runelite
-	const scheduleBody = await request.json();
+	// validate data from runelite
+	let scheduleBody;
+	try {
+		scheduleBody = await request.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 400 });
+	}
+
+	if (!scheduleBody.date || !scheduleBody.events) {
+		return new Response('Missing required fields', { status: 400 });
+	}
 
 	// clear old data
 	await env.sithclanplugindatabase.prepare('DELETE FROM EventMiscInfo;').run();
@@ -59,10 +68,7 @@ router.post('/api/eventschedule', async (request, env) => {
 router.get('/api/memberroster', async (request, env) => {
 	// SQL query to get roster from database
 	const { results: rosterResults } = await env.sithclanplugindatabase
-		.prepare(
-			'SELECT MemberName, MemberRank, MemberCredits, MemberDateJoined, MemberAltName, MemberDatePromoted ' +
-				'FROM MemberRoster;',
-		)
+		.prepare('SELECT MemberName, MemberRank, MemberCredits, MemberDateJoined, MemberAltName, MemberDatePromoted ' + 'FROM MemberRoster;')
 		.run();
 
 	// query to get roster date from database
@@ -95,15 +101,24 @@ router.post('/api/memberroster', async (request, env) => {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	// data from runelite
-	const body = await request.json();
+	// validate data from runelite
+	let rosterBody;
+	try {
+		rosterBody = await request.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 400 });
+	}
+
+	if (!Array.isArray(rosterBody) || rosterBody.length === 0) {
+		return new Response('Missing required fields', { status: 400 });
+	}
 
 	// clear old data
 	await env.sithclanplugindatabase.prepare('DELETE FROM MemberRoster;').run();
 	await env.sithclanplugindatabase.prepare('DELETE FROM RosterDate;').run();
 
 	// iterate through roster
-	for (const member of body) {
+	for (const member of rosterBody) {
 		// insert member
 		await env.sithclanplugindatabase
 			.prepare(
@@ -143,13 +158,22 @@ router.post('/api/announcements', async (request, env) => {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	// data from runelite
-	const body = await request.json();
+	// validate data from runelite
+	let announcementBody;
+	try {
+		announcementBody = await request.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 400 });
+	}
+
+	if (!announcementBody.announcementText) {
+		return new Response('Missing required fields', { status: 400 });
+	}
 
 	// insert announcement
 	await env.sithclanplugindatabase
 		.prepare('INSERT INTO Announcements (AnnouncementDate, AnnouncementText) VALUES (?, ?);')
-		.bind(new Date().toISOString(), body.announcementText)
+		.bind(new Date().toISOString(), announcementBody.announcementText)
 		.run();
 
 	return new Response('Announcements posted successfully', { status: 201 });
@@ -170,16 +194,22 @@ router.put('/api/announcements/:id', async (request, env) => {
 		return new Response('Invalid ID', { status: 400 });
 	}
 
-	// get announcement info
-	const body = await request.json();
-	if (!body.announcementText) {
-		return new Response('Missing announcement text', { status: 400 });
+	// validate data from runelite
+	let announcementBody;
+	try {
+		announcementBody = await request.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 400 });
+	}
+
+	if (!announcementBody.announcementText) {
+		return new Response('Missing required fields', { status: 400 });
 	}
 
 	// create and send update SQL statement
 	const result = await env.sithclanplugindatabase
 		.prepare('UPDATE Announcements SET AnnouncementText = ?, LastEdited = ? WHERE AnnouncementId = ?;')
-		.bind(body.announcementText, new Date().toISOString(), id)
+		.bind(announcementBody.announcementText, new Date().toISOString(), id)
 		.run();
 
 	if (result.meta.changes === 0) {
