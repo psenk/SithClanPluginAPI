@@ -168,3 +168,5 @@ dist
 
 # misc
 cmds.txt
+/.vscode
+.editorconfig
