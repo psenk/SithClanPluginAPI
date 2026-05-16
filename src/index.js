@@ -28,7 +28,7 @@ router.post('/api/eventschedule', async (request, env) => {
 		return new Response('Invalid JSON', { status: 400 });
 	}
 
-	if (!scheduleBody.date || !scheduleBody.events) {
+	if (!Array.isArray(scheduleBody) || scheduleBody.length === 0) {
 		return new Response('Missing required fields', { status: 400 });
 	}
 
