@@ -291,7 +291,7 @@ async function fetchSchedule(env) {
 		.prepare(
 			'SELECT d.DayId, d.Date, e.EventId, e.EventTitle, e.EventTime, e.EventHost, e.EventLocation, e.EventRepeated, emi.Info ' +
 				'FROM DaySchedule d ' +
-				'INNER JOIN Event e ON e.DayId = d.DayId ' +
+				'LEFT JOIN Event e ON e.DayId = d.DayId ' +
 				'LEFT JOIN EventMiscInfo emi ON emi.EventId = e.EventId;',
 		)
 		.run();
@@ -307,6 +307,11 @@ async function fetchSchedule(env) {
 			const day = { date: row.Date, events: [] };
 			dayMap.set(row.DayId, day);
 			schedule.push(day);
+		}
+
+		// skip days with no events
+		if (row.EventId === null) {
+			continue
 		}
 
 		// add event if not seen
