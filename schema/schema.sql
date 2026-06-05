@@ -1,11 +1,11 @@
 -- Main Database Tables
 
--- Event Schedule tables
 DROP TABLE IF EXISTS EventMiscInfo;
 DROP TABLE IF EXISTS Event;
 DROP TABLE IF EXISTS DaySchedule;
 DROP TABLE IF EXISTS RosterDate;
 DROP TABLE IF EXISTS MemberRoster;
+DROP TABLE IF EXISTS MemberAboutMe;
 DROP TABLE IF EXISTS Announcements;
 
 CREATE TABLE IF NOT EXISTS DaySchedule 
@@ -49,6 +49,13 @@ CREATE TABLE IF NOT EXISTS MemberRoster
     MemberDateJoined TEXT NOT NULL,
     MemberAltName TEXT,
     MemberDatePromoted TEXT
+);
+
+CREATE TABLE IF NOT EXISTS MemberAboutMe
+(
+    MemberName TEXT PRIMARY KEY,
+    AboutMe TEXT,
+    LastUpdated TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Announcements

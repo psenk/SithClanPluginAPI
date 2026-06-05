@@ -142,6 +142,75 @@ router.post('/api/memberroster', async (request, env) => {
 });
 
 // --------------------
+// Member About Me
+// --------------------
+
+// GET - fetch member about me
+router.get('/api/aboutme/:memberName', async (request, env) => {
+	const { memberName } = request.params;
+
+	// look up the bio in the database
+	const result = await env.sithclanplugindatabase
+		.prepare('SELECT AboutMe FROM MemberAboutMe WHERE LOWER(MemberName) = LOWER(?);')
+		.bind(memberName)
+		.first();
+
+	// return empty string if no bio yet
+	if (!result) {
+		return Response.json({ aboutMe: '' });
+	}
+
+	return Response.json({ aboutMe: result.AboutMe });
+});
+
+// PUT - submit or update member about me
+router.put('/api/aboutme/:memberName', async (request, env) => {
+	const { memberName } = request.params;
+
+	// parse the request body
+	let aboutMeBody;
+	try {
+		aboutMeBody = await request.json();
+	} catch {
+		return new Response('Invalid JSON', { status: 400 });
+	}
+
+	// validate required fields
+	if (!aboutMeBody.aboutMe || !aboutMeBody.submittedName) {
+		return new Response('Missing required fields', { status: 400 });
+	}
+
+	// member authorization to edit about me
+	if (body.submittedName.toLowerCase() !== memberName.toLowerCase()) {
+		return new Response('Unauthorized: name mismatch', { status: 401 });
+	}
+
+	// does member exist
+	const memberExists = await env.sithclanplugindatabase
+		.prepare('SELECT MemberName FROM MemberRoster WHERE LOWER(MemberName) = LOWER(?);')
+		.bind(memberName)
+		.first();
+
+	if (!memberExists) {
+		return new Response('Member not found in roster', { status: 404 });
+	}
+
+	// cap about me at 200 characters
+	const aboutMeText = body.aboutMe.substring(0, 200).trim();
+
+	// build sql statement to add or update
+	await env.sithclanplugindatabase
+		.prepare(
+			'INSERT INTO MemberAboutMe (MemberName, AboutMe, LastUpdated) VALUES (?, ?, ?) ' +
+				'ON CONFLICT(MemberName) DO UPDATE SET AboutMe = excluded.AboutMe, LastUpdated = excluded.LastUpdated;',
+		)
+		.bind(memberExists.MemberName, aboutMeText, new Date().toISOString())
+		.run();
+
+	return new Response('About Me updated successfully', { status: 200 });
+});
+
+// --------------------
 // Announcements
 // --------------------
 
@@ -311,7 +380,7 @@ async function fetchSchedule(env) {
 
 		// skip days with no events
 		if (row.EventId === null) {
-			continue
+			continue;
 		}
 
 		// add event if not seen
