@@ -181,7 +181,7 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 	}
 
 	// member authorization to edit about me
-	if (body.submittedName.toLowerCase() !== memberName.toLowerCase()) {
+	if (aboutMeBody.submittedName.toLowerCase() !== memberName.toLowerCase()) {
 		return new Response('Unauthorized: name mismatch', { status: 401 });
 	}
 
@@ -196,7 +196,7 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 	}
 
 	// cap about me at 200 characters
-	const aboutMeText = body.aboutMe.substring(0, 200).trim();
+	const aboutMeText = aboutMeBody.aboutMe.substring(0, 200).trim();
 
 	// build sql statement to add or update
 	await env.sithclanplugindatabase
