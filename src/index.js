@@ -176,7 +176,7 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 	}
 
 	// validate required fields
-	if (aboutMeBody.aboutMe === undefined || aboutMeBody.aboutMe === null || aboutMeBody.submittedName) {
+	if (aboutMeBody.aboutMe === undefined || aboutMeBody.aboutMe === null || !aboutMeBody.submittedName) {
 		return new Response('Missing required fields', { status: 400 });
 	}
 
