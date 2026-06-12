@@ -145,7 +145,7 @@ router.post('/api/memberroster', async (request, env) => {
 // Member About Me
 // --------------------
 
-// GET - fetch member about me
+// GET - fetch specific member about me
 router.get('/api/aboutme/:memberName', async (request, env) => {
 	const { memberName } = request.params;
 
@@ -161,6 +161,19 @@ router.get('/api/aboutme/:memberName', async (request, env) => {
 	}
 
 	return Response.json({ aboutMe: result.AboutMe ?? '' });
+});
+
+// GET - fetch all members about me
+router.get('/api/aboutme', async (request, env) => {
+	const { results } = await env.sithclanplugindatabase.prepare('SELECT MemberName, AboutMe FROM MemberAboutMe;').run();
+
+	// build map of member name, about me
+	const aboutMeMap = {};
+	for (const row of results) {
+		aboutMeMap[row.MemberName.toLowerCase()] = row.AboutMe ?? '';
+	}
+
+	return Response.json(aboutMeMap);
 });
 
 // PUT - submit or update member about me
