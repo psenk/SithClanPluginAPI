@@ -323,7 +323,7 @@ router.delete('/api/announcements/:id', async (request, env) => {
 		return new Response('Announcement not found', { status: 404 });
 	}
 
-	return new Response('Announcement deleted successfully', { status: 204 });
+	return new Response('Announcement deleted successfully', { status: 200 });
 });
 
 // --------------------
