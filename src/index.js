@@ -91,7 +91,7 @@ router.get('/api/memberroster', async (request, env) => {
 
 	const date = rosterDate[0].Date;
 
-	return Response.json({ date, roster });
+	return Response.json({ responseDate: date, responseRoster: roster });
 });
 
 // POST - member roster
@@ -335,7 +335,7 @@ router.get('/api/startup', async (request, env) => {
 	// getting all required startup info
 	const [startupSchedule, startupAnnouncements] = await Promise.all([fetchSchedule(env), fetchAnnouncements(env)]);
 
-	return Response.json({ startupSchedule, startupAnnouncements });
+	return Response.json({ responseSchedule: startupSchedule, responseAnnouncements: startupAnnouncement });
 });
 
 // GET - validate senate API key
