@@ -209,7 +209,7 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 	}
 
 	// normalize line endings, cap line count, then cap length
-	const aboutMeText = aboutMeBody.aboutMe.replace('/\r\n/g', '\n').split('\n').slice(0, 6).join('\n').substring(0, 200).trim();
+	const aboutMeText = aboutMeBody.aboutMe.replace(/\r\n/g, '\n').split('\n').slice(0, 6).join('\n').substring(0, 200).trim();
 
 	// build sql statement to add or update
 	await env.sithclanplugindatabase
