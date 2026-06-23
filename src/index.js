@@ -208,8 +208,8 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 		return new Response('Member not found in roster', { status: 404 });
 	}
 
-	// cap about me at 200 characters
-	const aboutMeText = aboutMeBody.aboutMe.substring(0, 200).trim();
+	// normalize line endings, cap line count, then cap length
+	const aboutMeText = aboutMeBody.aboutMe.replace('/\r\n/g', '\n').split('\n').slice(0, 6).join('\n').substring(0, 200).trim();
 
 	// build sql statement to add or update
 	await env.sithclanplugindatabase
