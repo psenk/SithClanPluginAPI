@@ -335,7 +335,7 @@ router.get('/api/startup', async (request, env) => {
 	// getting all required startup info
 	const [startupSchedule, startupAnnouncements] = await Promise.all([fetchSchedule(env), fetchAnnouncements(env)]);
 
-	return Response.json({ responseSchedule: startupSchedule, responseAnnouncements: startupAnnouncement });
+	return Response.json({ responseSchedule: startupSchedule, responseAnnouncements: startupAnnouncements });
 });
 
 // GET - validate senate API key
