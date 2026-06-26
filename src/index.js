@@ -179,6 +179,7 @@ router.get('/api/aboutme/:memberName', async (request, env) => {
 // PUT - submit or update member about me
 router.put('/api/aboutme/:memberName', async (request, env) => {
 	const { memberName } = request.params;
+	const decodedName = decodeURIComponent(memberName).replace(/\u00A0/g, ' ');
 
 	// parse the request body
 	let aboutMeBody;
@@ -193,15 +194,17 @@ router.put('/api/aboutme/:memberName', async (request, env) => {
 		return new Response('Missing required fields', { status: 400 });
 	}
 
+	const submittedName = aboutMeBody.submittedName.replace(/\u00A0/g, ' ');
+
 	// member authorization to edit about me
-	if (aboutMeBody.submittedName.toLowerCase() !== memberName.toLowerCase()) {
+	if (submittedName.toLowerCase() !== decodedName.toLowerCase()) {
 		return new Response('Unauthorized: name mismatch', { status: 401 });
 	}
 
 	// does member exist
 	const memberExists = await env.sithclanplugindatabase
 		.prepare('SELECT MemberName FROM MemberRoster WHERE LOWER(MemberName) = LOWER(?);')
-		.bind(memberName)
+		.bind(decodedName)
 		.first();
 
 	if (!memberExists) {
