@@ -9,12 +9,12 @@
 		"test": "vitest"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.13.1",
-		"vitest": "^4.1.0",
-		"wrangler": "^4.105.0"
+		"@cloudflare/vitest-pool-workers": "^0.13.5",
+		"vitest": "^4.1.10",
+		"wrangler": "^4.110.0"
 	},
 	"dependencies": {
 		"22": "^0.0.0",
-		"itty-router": "^5.0.23"
+		"itty-router": "^5.0.24"
 	}
 }
